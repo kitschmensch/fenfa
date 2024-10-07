@@ -20,7 +20,7 @@ Fenfa includes basic security features like banning IPs after too many failed ac
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/yourusername/fenfa.git
+   git clone https://github.com/kitschmensch/fenfa.git
    cd fenfa
    ```
 
