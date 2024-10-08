@@ -5,6 +5,7 @@ on:
     branches: 
       - main
       - test
+  push:
     tags:
       - 'v*'
   pull_request:
