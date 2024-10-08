@@ -158,4 +158,4 @@ Fenfa is configured using environment variables, which can be set in a `.env` fi
 
 ## Versions:
 
-- v0.1.0 - Initial Release
+- v0.1.0 - Initial Release!

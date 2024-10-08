@@ -2,8 +2,8 @@ name: Go
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -38,41 +38,9 @@ jobs:
         run: go build -o fenfa-mac-arm64
 
       - name: Create macOS Release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref_type == 'tag'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Creating macOS release..."
-          gh release create ${{ steps.get_version.outputs.VERSION }} fenfa-mac-intel fenfa-mac-arm64 \
-            --title "${{ steps.get_version.outputs.VERSION }}" \
-            --notes "${{ steps.release_notes.outputs.NOTES }}"
-  linux_build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.23.1"
-
-      - name: Install dependencies
-        run: go mod tidy
-
-      - name: Build Linux binary
-        env:
-          GOOS: linux
-          GOARCH: amd64
-          CGO_ENABLED: 0
-        run: go build -o fenfa-linux
-
-      - name: Create Linux Release
-        if: github.ref == 'refs/heads/main'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Creating Linux release..."
-          gh release create ${{ steps.get_version.outputs.VERSION }} fenfa-linux \
-            --title "${{ steps.get_version.outputs.VERSION }}" \
-            --notes "${{ steps.release_notes.outputs.NOTES }}"
+          gh release​⬤
