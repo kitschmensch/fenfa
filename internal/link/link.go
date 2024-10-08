@@ -14,44 +14,42 @@ import (
 )
 
 func GenerateFileLink(path string) {
-	path = filepath.Clean(path)
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Printf("File does not exist: %s", path)
-		fmt.Printf("Error: File does not exist: %s\n", path)
-		return
+	absolutePath, err := utils.ResolveToAbsolutePath(path)
+	if err != nil {
+		log.Fatalf("Error resolving path: %v", err)
 	}
 
-	info, err := os.Stat(path)
+	info, err := os.Stat(absolutePath)
 	if err != nil {
-		log.Printf("Error checking file information: %s", path)
+		log.Printf("Error checking file information: %s", absolutePath)
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
 
 	if info.IsDir() {
-		estimatedSize, err := utils.EstimateZipSize(path, config.MaxZipDepth)
+		estimatedSize, err := utils.EstimateZipSize(absolutePath, config.MaxZipDepth)
 		if err != nil {
-			log.Printf("Error checking file information: %s", path)
+			log.Printf("Error checking file information: %s", absolutePath)
 			fmt.Printf("Error estimating zip size: %v\n", err)
 			return
 		}
 
 		if estimatedSize > config.MaxZipSize {
-			log.Printf("Error checking file information: %s", path)
+			log.Printf("Error checking file information: %s", absolutePath)
 			fmt.Printf("Error: Directory size exceeds the limit of %d bytes\n", config.MaxZipSize)
 			return
 		}
 
-		zipPath, err := utils.ZipDirectory(path, config.MaxZipDepth)
+		zipPath, err := utils.ZipDirectory(absolutePath, config.MaxZipDepth)
 		if err != nil {
-			log.Printf("Error checking file information: %s", path)
+			log.Printf("Error checking file information: %s", absolutePath)
 			fmt.Printf("Error zipping directory: %v\n", err)
 			return
 		}
 
 		err = os.MkdirAll(config.ZipDirectory, 0755)
 		if err != nil {
-			log.Printf("Error checking file information: %s", path)
+			log.Printf("Error checking file information: %s", absolutePath)
 			fmt.Printf("Error: Could not create directory: %v\n", err)
 			return
 		}
@@ -64,12 +62,12 @@ func GenerateFileLink(path string) {
 			return
 		}
 
-		path = finalZipPath
+		absolutePath = finalZipPath
 	}
 
 	expiration := time.Now().Add(time.Duration(config.DefaultExpirationPeriod) * time.Second).Unix()
-	hash := utils.Encode(path, config.Salt, expiration)
-	store.Add(hash, expiration, path)
+	hash := utils.Encode(absolutePath, config.Salt, expiration)
+	store.Add(hash, expiration, absolutePath)
 	var url string
 	if config.TemplateIncludesPort {
 		// Format with port
@@ -78,7 +76,7 @@ func GenerateFileLink(path string) {
 		// Format without port
 		url = fmt.Sprintf("%s/%s", config.Host, hash)
 	}
-	log.Printf("Generated link: %s for file: %s", url, path)
+	log.Printf("Generated link: %s for file: %s", url, absolutePath)
 	fmt.Println(url)
 }
 

@@ -125,3 +125,24 @@ func estimateSizeHelper(basePath, relativePath string, currentDepth, maxDepth in
 
 	return totalSize, nil
 }
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func ResolveToAbsolutePath(path string) (string, error) {
+	if filepath.IsAbs(path) || fileExists(path) {
+		return filepath.Abs(path)
+	}
+
+	pathEnv := os.Getenv("PATH")
+	for _, dir := range filepath.SplitList(pathEnv) {
+		fullPath := filepath.Join(dir, path)
+		if fileExists(fullPath) {
+			return filepath.Abs(fullPath)
+		}
+	}
+
+	return "", fmt.Errorf("file not found: %s", path)
+}
