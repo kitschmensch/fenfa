@@ -23,6 +23,9 @@ jobs:
         with:
           go-version: "1.23.1"
 
+      - name: Install build tools
+        run: sudo apt-get install -y build-essential
+
       - name: Install dependencies
         run: go mod tidy
 
@@ -39,11 +42,6 @@ jobs:
           GOARCH: arm64
           CGO_ENABLED: 0
         run: go build -o fenfa-mac-arm64
-
-      - name: Set executable permission for macOS binaries
-        run: |
-          chmod +x fenfa-mac-intel
-          chmod +x fenfa-mac-arm64
 
       - name: Create macOS Release
         if: github.ref == 'refs/heads/main' # Only create release if on main
@@ -66,6 +64,9 @@ jobs:
         with:
           go-version: "1.23.1"
 
+      - name: Install build tools
+        run: sudo apt-get install -y build-essential
+
       - name: Install dependencies
         run: go mod tidy
 
@@ -75,10 +76,6 @@ jobs:
           GOARCH: amd64
           CGO_ENABLED: 0
         run: go build -o fenfa-linux
-
-      - name: Set executable permission for Linux binaries
-        run: |
-          chmod +x fenfa-linux
 
       - name: Create Linux Release
         if: github.ref == 'refs/heads/main' # Only create release if on main
