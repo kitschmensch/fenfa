@@ -1,0 +1,74 @@
+name: Go
+
+on:
+  push:
+    branches: 
+      - main
+      - test
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  macos_build:
+    runs-on: ubuntu-latest  # Use ubuntu-latest for cross-compilation
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.1'  # Use the Go version specified in your go.mod
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Build macOS binary (Intel)
+      env:
+        GOOS: darwin
+        GOARCH: amd64
+        CGO_ENABLED: 0
+      run: go build -o fenfa-intel
+
+    - name: Build macOS binary (Apple Silicon)
+      env:
+        GOOS: darwin
+        GOARCH: arm64
+        CGO_ENABLED: 0
+      run: go build -o fenfa-arm64
+
+    - name: Create macOS Release
+      if: github.ref == 'refs/heads/main'  # Only create release on main branch
+      run: |
+        echo "Creating macOS release..."
+        # Replace <tag> and <artifacts> with your release specifics
+        # gh release create <tag> fenfa-intel fenfa-arm64 --title "macOS Release" --notes "Release notes for macOS"
+
+  linux_build:
+    runs-on: ubuntu-latest  # Build on Ubuntu
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.1'  # Use the Go version specified in your go.mod
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Build Linux binary
+      env:
+        GOOS: linux
+        GOARCH: amd64  # x86_64 architecture
+        CGO_ENABLED: 0  # Disable CGO to create a static binary
+      run: go build -o fenfa-linux
+
+    - name: Create Linux Release
+      if: github.ref == 'refs/heads/main'  # Only create release on main branch
+      run: |
+        echo "Creating Linux release..."
+        # Replace <tag> and <artifacts> with your release specifics
+        # gh release create <tag> fenfa-linux --title "Linux Release" --notes "Release notes for Linux"
