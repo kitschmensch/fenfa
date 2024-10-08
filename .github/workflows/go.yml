@@ -43,8 +43,7 @@ jobs:
       run: |
         echo "Creating macOS release..."
         # Replace <tag> and <artifacts> with your release specifics
-        # gh release create <tag> fenfa-intel fenfa-arm64 --title "macOS Release" --notes "Release notes for macOS"
-
+        gh release create v0.1.0 fenfa-intel fenfa-arm64 --title "Release v0.1.0"
   linux_build:
     runs-on: ubuntu-latest  # Build on Ubuntu
 
@@ -70,5 +69,4 @@ jobs:
       if: github.ref == 'refs/heads/main'  # Only create release on main branch
       run: |
         echo "Creating Linux release..."
-        # Replace <tag> and <artifacts> with your release specifics
-        # gh release create <tag> fenfa-linux --title "Linux Release" --notes "Release notes for Linux"
+        gh release create v0.1.0 fenfa-linux --title "Linux Release"
