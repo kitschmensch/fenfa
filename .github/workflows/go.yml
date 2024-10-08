@@ -38,9 +38,42 @@ jobs:
         run: go build -o fenfa-mac-arm64
 
       - name: Create macOS Release
-        if: github.ref_type == 'tag'
+        if: github.ref == 'refs/heads/main' # Only create release if on main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Creating macOS release..."
-          gh release​⬤
+          gh release create "v${{ github.run_number }}" fenfa-mac-intel fenfa-mac-arm64 \
+            --title "Release v${{ github.run_number }}" \
+            --notes "Release for macOS binaries."
+
+  linux_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.1"
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build Linux binary
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: go build -o fenfa-linux
+
+      - name: Create Linux Release
+        if: github.ref == 'refs/heads/main' # Only create release if on main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Creating Linux release..."
+          gh release create "v${{ github.run_number }}" fenfa-linux \
+            --title "Release v${{ github.run_number }}" \
+            --notes "Release for Linux binary."
