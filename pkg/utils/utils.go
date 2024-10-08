@@ -2,6 +2,7 @@ package utils
 
 import (
 	"archive/zip"
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -11,9 +12,10 @@ import (
 )
 
 func Encode(input string, salt string, timestamp int64) string {
-	var s string = fmt.Sprintf("%s%d%s", input, timestamp, salt)
-	h := sha256.New()
-	h.Write([]byte(s))
+	key := []byte(salt)
+	message := fmt.Sprintf("%s%d", input, timestamp)
+	h := hmac.New(sha256.New, key)
+	h.Write([]byte(message))
 	return hex.EncodeToString(h.Sum(nil))
 }
 

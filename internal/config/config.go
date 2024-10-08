@@ -21,6 +21,7 @@ var (
 	ZipDirectory            string
 	TemplateIncludesPort    bool
 	BinaryDirectory         string
+	RateLimit               int
 )
 
 func Initialize(dir string) {
@@ -76,5 +77,9 @@ func Initialize(dir string) {
 			log.Fatalf("Invalid value for FENFA_TEMPLATE_INCLUDES_PORT: %v", err)
 		}
 		TemplateIncludesPort = parsedValue
+	}
+	RateLimit, err = strconv.Atoi(os.Getenv("FENFA_RATE_LIMIT"))
+	if err != nil {
+		RateLimit = 30
 	}
 }

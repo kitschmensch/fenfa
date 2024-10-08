@@ -1,0 +1,5 @@
+.env
+.DS_Store
+data.db
+fenfa
+fenfa.log

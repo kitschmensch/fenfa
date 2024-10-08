@@ -90,8 +90,6 @@ func FileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, hash := filepath.Split(r.URL.Path)
-
 	failedAttempts, err := store.GetFailedAttempts(ip)
 	if err != nil {
 		log.Printf("Error getting failed attempts for IP %s: %v", ip, err)
@@ -104,7 +102,7 @@ func FileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Access Denied", http.StatusForbidden)
 		return
 	}
-
+	_, hash := filepath.Split(r.URL.Path)
 	entry, active, exists := store.Get(hash)
 	if !exists {
 		store.IncrementFailedAttempts(ip)
@@ -123,7 +121,7 @@ func FileHandler(w http.ResponseWriter, r *http.Request) {
 		store.IncrementFailedAttempts(ip)
 		log.Printf("File not found at path: %s", entry.Path)
 		store.Delete(hash)
-		http.Error(w, "File moved or deleted. Link is now invalid.", http.StatusNotFound)
+		http.NotFound(w, r)
 		return
 	} else if err != nil {
 		log.Printf("Error accessing file at path: %s: %v", entry.Path, err)

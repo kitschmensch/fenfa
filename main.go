@@ -10,12 +10,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/sevlyar/go-daemon"
 )
 
+var requests int
+var mu sync.Mutex
+var window = time.Minute
 var signal = new(string)
 var httpServer *http.Server
 var binaryDirectory string
@@ -109,12 +113,16 @@ func startServer(cntxt *daemon.Context) {
 	}
 	log.Println("Started Daemon")
 	defer cntxt.Release()
-
+	go resetRateLimit()
 	httpServer = &http.Server{
 		Addr: fmt.Sprintf(":%d", config.Port),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodGet {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+			if !rateLimit() {
+				http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
 				return
 			}
 			link.FileHandler(w, r)
@@ -161,4 +169,24 @@ func signalHandler(sig os.Signal) error {
 	}
 
 	return daemon.ErrStop
+}
+
+func rateLimit() bool {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if requests >= config.RateLimit {
+		return false
+	}
+	requests++
+	return true
+}
+
+func resetRateLimit() {
+	for {
+		time.Sleep(window)
+		mu.Lock()
+		requests = 0
+		mu.Unlock()
+	}
 }
