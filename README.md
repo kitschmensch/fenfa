@@ -147,7 +147,6 @@ Fenfa is configured using environment variables, which can be set in a `.env` fi
 ## Implementation Details
 
 - All logs are written to `fenfa.log` by default. You can change the log file location in the `main.go` file when initializing the logger.
--
 
 ## Planned Improvements
 
