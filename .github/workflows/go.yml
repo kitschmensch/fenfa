@@ -5,13 +5,15 @@ on:
     branches: 
       - main
       - test
+    tags:
+      - 'v*'
   pull_request:
     branches: 
       - main
 
 jobs:
   macos_build:
-    runs-on: ubuntu-latest  # Use ubuntu-latest for cross-compilation
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -19,7 +21,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.23.1'  # Use the Go version specified in your go.mod
+        go-version: '1.23.1'
 
     - name: Install dependencies
       run: go mod tidy
@@ -29,23 +31,26 @@ jobs:
         GOOS: darwin
         GOARCH: amd64
         CGO_ENABLED: 0
-      run: go build -o fenfa-intel
+      run: go build -o fenfa-mac-intel
 
     - name: Build macOS binary (Apple Silicon)
       env:
         GOOS: darwin
         GOARCH: arm64
         CGO_ENABLED: 0
-      run: go build -o fenfa-arm64
+      run: go build -o fenfa-mac-arm64
 
     - name: Create macOS Release
-      if: github.ref == 'refs/heads/main'  # Only create release on main branch
+      if: github.ref == 'refs/heads/main'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "Creating macOS release..."
-        # Replace <tag> and <artifacts> with your release specifics
-        gh release create v0.1.0 fenfa-intel fenfa-arm64 --title "Release v0.1.0"
+        gh release create ${{ steps.get_version.outputs.VERSION }} fenfa-mac-intel fenfa-mac-arm64 \
+          --title "${{ steps.get_version.outputs.VERSION }}" \
+          --notes "${{ steps.release_notes.outputs.NOTES }}"
   linux_build:
-    runs-on: ubuntu-latest  # Build on Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -53,7 +58,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.23.1'  # Use the Go version specified in your go.mod
+        go-version: '1.23.1'
 
     - name: Install dependencies
       run: go mod tidy
@@ -61,12 +66,16 @@ jobs:
     - name: Build Linux binary
       env:
         GOOS: linux
-        GOARCH: amd64  # x86_64 architecture
-        CGO_ENABLED: 0  # Disable CGO to create a static binary
+        GOARCH: amd64
+        CGO_ENABLED: 0
       run: go build -o fenfa-linux
 
     - name: Create Linux Release
-      if: github.ref == 'refs/heads/main'  # Only create release on main branch
+      if: github.ref == 'refs/heads/main'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "Creating Linux release..."
-        gh release create v0.1.0 fenfa-linux --title "Linux Release"
+        gh release create ${{ steps.get_version.outputs.VERSION }} fenfa-linux \
+          --title "${{ steps.get_version.outputs.VERSION }}" \
+          --notes "${{ steps.release_notes.outputs.NOTES }}"
