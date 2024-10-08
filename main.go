@@ -17,17 +17,28 @@ import (
 	"github.com/sevlyar/go-daemon"
 )
 
-var requests int
-var mu sync.Mutex
-var window = time.Minute
-var signal = new(string)
-var httpServer *http.Server
-var binaryDirectory string
-var command string
-var cntxt *daemon.Context
+const (
+	LogFileName      = "fenfa.log"
+	PIDFileName      = "fenfa.pid"
+	CommandStart     = "start"
+	CommandStop      = "stop"
+	CommandForceQuit = "force-quit"
+	CommandLink      = "link"
+	CommandList      = "list"
+	CommandUnban     = "unban"
+)
+
+var (
+	requests        int
+	mu              sync.Mutex
+	windowDuration  = time.Minute
+	signalFlag      = new(string)
+	httpServer      *http.Server
+	binaryDirectory string
+	cntxt           *daemon.Context
+)
 
 func main() {
-	command = os.Args[1]
 
 	binaryPath, err := os.Executable()
 	if err != nil {
@@ -35,7 +46,7 @@ func main() {
 	}
 	binaryDirectory = filepath.Dir(binaryPath)
 
-	var logPath = string(binaryDirectory + `/fenfa.log`)
+	var logPath = filepath.Join(binaryDirectory, LogFileName)
 	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatalf("Failed to open log file: %v", err)
@@ -48,45 +59,38 @@ func main() {
 		os.Exit(1)
 	}
 
-	if command == "start" || command == "stop" || command == "force-quit" {
-		daemon.AddCommand(daemon.StringFlag(signal, "stop"), syscall.SIGQUIT, signalHandler)
-		daemon.AddCommand(daemon.StringFlag(signal, "force-quit"), syscall.SIGTERM, signalHandler)
-
-		cntxt = &daemon.Context{
-			PidFileName: "fenfa.pid",
-			PidFilePerm: 0644,
-			LogFileName: "fenfa.log",
-			LogFilePerm: 0640,
-			WorkDir:     binaryDirectory,
-			Umask:       027,
-		}
-	}
-
 	config.Initialize(binaryDirectory)
 	store.Initialize()
 
+	command := os.Args[1]
+
 	switch command {
-	case "start":
+	case CommandStart, CommandStop, CommandForceQuit:
+		initializeDaemonContext()
+	}
+
+	switch command {
+	case CommandStart:
 		startServer(cntxt)
-	case "stop":
-		*signal = "stop"
+	case CommandStop:
+		*signalFlag = CommandStop
 		sendFlag(cntxt)
-	case "force-quit":
-		*signal = "force-quit"
+	case CommandForceQuit:
+		*signalFlag = CommandForceQuit
 		sendFlag(cntxt)
-	case "link":
+	case CommandLink:
 		if len(os.Args) < 3 {
 			fmt.Println("No path provided. Usage: fenfa link /path/to/file]")
 			os.Exit(1)
 		}
 		link.GenerateFileLink(os.Args[2])
-	case "list":
+	case CommandList:
 		if len(os.Args) < 3 {
 			fmt.Println("No table provided. Usage: fenfa link [entries|ip_entries]")
 			os.Exit(1)
 		}
 		store.List(os.Args[2])
-	case "unban":
+	case CommandUnban:
 		if len(os.Args) < 3 {
 			fmt.Println("No IP provided. Usage: fenfa unban [IP Address]")
 			os.Exit(1)
@@ -94,6 +98,11 @@ func main() {
 		store.ResetFailedAttempts(os.Args[2])
 	default:
 		fmt.Println("Invalid command. Usage: fenfa [start|stop|list [entries|ip_attempts]|link /path/to/file]")
+	}
+
+	switch command {
+	case CommandStart, CommandStop, CommandForceQuit:
+		initializeDaemonContext()
 	}
 }
 
@@ -140,7 +149,21 @@ func startServer(cntxt *daemon.Context) {
 		log.Printf("Error: %s", err.Error())
 	}
 
-	log.Println("daemon terminated")
+	log.Println("Daemon successfully terminated.")
+}
+
+func initializeDaemonContext() {
+	daemon.AddCommand(daemon.StringFlag(signalFlag, CommandStop), syscall.SIGQUIT, signalHandler)
+	daemon.AddCommand(daemon.StringFlag(signalFlag, CommandForceQuit), syscall.SIGTERM, signalHandler)
+
+	cntxt = &daemon.Context{
+		PidFileName: PIDFileName,
+		PidFilePerm: 0644,
+		LogFileName: LogFileName,
+		LogFilePerm: 0640,
+		WorkDir:     binaryDirectory, //Daemon process changes to the binary directory.
+		Umask:       027,
+	}
 }
 
 func sendFlag(cntxt *daemon.Context) {
@@ -184,7 +207,7 @@ func rateLimit() bool {
 
 func resetRateLimit() {
 	for {
-		time.Sleep(window)
+		time.Sleep(windowDuration)
 		mu.Lock()
 		requests = 0
 		mu.Unlock()
