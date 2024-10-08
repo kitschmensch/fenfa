@@ -4,13 +4,12 @@ fēnfā: to distribute
 
 Fenfa is a simple file-sharing program that generates temporary links for accessing files on your server. Fenfa generates links for sharing individual files or entire directories (which are zipped automatically before serving) without having to share credentials or go through an intermediary like wetransfer. This program is intended to run within a shared server environment where permissions are limited, but could also work well on a home computer if port forwarding is configured on your home network.
 
-Fenfa includes basic security features like banning IPs after too many failed access attempts and handling link expirations, but it has not been seriously tested. Make sure to `fenfa stop` or kill the process to disable the HTTP server when not in use.
-
 ## Features
 
 - **Easily Start/Stop HTTP Service**: Run Fenfa as a background service to manage the sharing of files.
 - **Generate Temporary Links**: Share files or directories with time-limited access links.
 - **IP Banning**: Automatically bans IPs after a configured number of failed access attempts.
+- **Rate Limiting**: Limit global calls per minute.
 - **Link Expiration**: Links expire after a configurable time period.
 - **Directory Sharing**: Serve entire directories as a zipped archive, with options for zip depth and max zip file size.
 - **Logging**: All activity is logged to a local log file.
@@ -59,7 +58,6 @@ Fenfa includes basic security features like banning IPs after too many failed ac
     FENFA_HOST=http://localhost
     FENFA_PORT=12000
     FENFA_DEFAULT_EXPIRATION_PERIOD=86400
-    FENFA_SALT=4839dha9rsh982hfscvh29ls
     FENFA_FAILED_ATTEMPT_LIMIT=10
     FENFA_MAX_ZIP_DEPTH=3
     FENFA_MAX_ZIP_SIZE=10737418240
@@ -138,11 +136,10 @@ Fenfa supports the following commands:
 
 Fenfa is configured using environment variables, which can be set in a `.env` file. The following settings are available:
 
-- **`FENFA_HOST`**: This is merely a slug to configure the URL output to the terminal.
+- **`FENFA_HOST`**: A slug to configure the URL output to the terminal.
 - **`FENFA_PORT`**: The port on which the service will run.
 - **`FENFA_TEMPLATE_INCLUDES_PORT`**: Boolean, whether to append ":port" at the end of the URL output.
 - **`FENFA_DEFAULT_EXPIRATION_PERIOD`**: The default expiration period for generated links (in seconds). For example, `86400` seconds is equal to 24 hours.
-- **`FENFA_SALT`**: A unique salt used for generating secure hashes for links. This ensures that links are not easily guessable.
 - **`FENFA_FAILED_ATTEMPT_LIMIT`**: The number of failed access attempts allowed before an IP is banned from accessing the service.
 - **`FENFA_MAX_ZIP_DEPTH`**: How many subdirectories deep to consider when zipping directories
 - **`FENFA_MAX_ZIP_SIZE`**: When zipping a directory, the size is estimated before zipping. If the estimated size is greater than this variable, the request will be cancelled.
@@ -154,11 +151,8 @@ Fenfa is configured using environment variables, which can be set in a `.env` fi
 
 ## Planned Improvements
 
-- Bug fixes, like better support for files and directories with spaces.
-- Pre-compiled releases
 - Functions for tracking statistics, like the number of times a link was downloaded.
 - A configurable process to automatically delete zips for expired links.
 - A command to delete links, and corresponding zip files, if any.
 - Better logging.
-- Configure log level and log file.
-- Further security enhancements, like tracking attempts per session.
+- Configure log level.

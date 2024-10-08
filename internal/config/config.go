@@ -36,7 +36,6 @@ const (
 // Global configuration variables
 var (
 	Port                 int
-	Salt                 string
 	DataFile             string
 	ExpirationPeriod     int64
 	ExpiredGracePeriod   int64

@@ -66,7 +66,12 @@ func GenerateFileLink(path string) {
 	}
 
 	expiration := time.Now().Add(time.Duration(config.DefaultExpirationPeriod) * time.Second).Unix()
-	hash := utils.Encode(absolutePath, config.Salt, expiration)
+	hash, err := utils.Encode(absolutePath)
+	if err != nil {
+		log.Printf("Error hashing path: %s", path)
+		fmt.Printf("Error: Could not hash path: %v\n", err)
+		return
+	}
 	store.Add(hash, expiration, absolutePath)
 	var url string
 	if config.TemplateIncludesPort {

@@ -3,6 +3,7 @@ package utils
 import (
 	"archive/zip"
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -11,12 +12,26 @@ import (
 	"path/filepath"
 )
 
-func Encode(input string, salt string, timestamp int64) string {
+func GenerateRandomSalt(length int) (string, error) {
+	salt := make([]byte, length)
+	_, err := rand.Read(salt)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate random salt: %w", err)
+	}
+	return hex.EncodeToString(salt), nil
+}
+
+func Encode(input string) (string, error) {
+	salt, err := GenerateRandomSalt(16)
+	if err != nil {
+		return "", err
+	}
+
 	key := []byte(salt)
-	message := fmt.Sprintf("%s%d", input, timestamp)
 	h := hmac.New(sha256.New, key)
-	h.Write([]byte(message))
-	return hex.EncodeToString(h.Sum(nil))
+	h.Write([]byte(input))
+
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 func ZipDirectory(dirPath string, maxDepth int) (string, error) {
