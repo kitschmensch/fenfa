@@ -167,7 +167,3 @@ Fenfa is configured using environment variables, which can be set in a `.env` fi
 - A command to delete links, and corresponding zip files, if any.
 - Better logging.
 - Configure log level.
-
-## Versions:
-
-- v0.1.0 - Initial Release!
