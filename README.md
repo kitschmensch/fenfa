@@ -16,6 +16,16 @@ Fenfa is a simple file-sharing program that generates temporary links for access
 
 ## Installation
 
+Automatically generated release binaries can be found on the [Releases page.](https://github.com/kitschmensch/fenfa/releases).
+
+You will need to change the permissions on the file before executing:
+
+```bash
+chmod +x fenfa-linux
+```
+
+### To build from source:
+
 1. **Clone the Repository**:
 
    ```bash
@@ -50,7 +60,9 @@ Fenfa is a simple file-sharing program that generates temporary links for access
    go build -o fenfa
    ```
 
-4. **Set up Environment Variables**:
+### Additional required setup
+
+1. **Set up Environment Variables**:
 
    Fenfa uses environment variables for configuration. Create a `.env` file in the project directory and include the following variables:
 
@@ -64,7 +76,7 @@ Fenfa is a simple file-sharing program that generates temporary links for access
     FENFA_ZIP_DIRECTORY=".fenfa"
    ```
 
-5. **Add to PATH**:
+2. **Add to PATH**:
    Depending on your shell, open your console config file:
 
    bash:
