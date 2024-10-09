@@ -2,11 +2,11 @@
 
 fēnfā: to distribute
 
-Fenfa is a simple file-sharing program that generates temporary links for accessing files on your server. Fenfa generates links for sharing individual files or entire directories (which are zipped automatically before serving) without having to share credentials or go through an intermediary like wetransfer. This program is intended to run within a shared server environment where permissions are limited, but could also work well on a home computer if port forwarding is configured on your home network.
+Fenfa is a simple file-sharing command line utility that generates temporary links for accessing files on your server. Fenfa generates links for sharing individual files or entire directories (which are zipped automatically before serving) without having to share credentials or go through an intermediary like wetransfer. This program is intended to run within a shared server environment where permissions are limited, but could also work well on a home computer if port forwarding is configured on your network.
 
 ## Features
 
-- **Easily Start/Stop HTTP Service**: Run Fenfa as a background service to manage the sharing of files.
+- **Easily Start/Stop HTTP Service**: Fenfa runs as a background service to manage the sharing of files.
 - **Generate Temporary Links**: Share files or directories with time-limited access links.
 - **IP Banning**: Automatically bans IPs after a configured number of failed access attempts.
 - **Rate Limiting**: Limit global calls per minute.
