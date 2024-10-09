@@ -46,7 +46,7 @@ chmod +x fenfa-linux
    - [github.com/joho/godotenv v1.5.1](https://github.com/joho/godotenv): Used for loading environment variables from a .env file.
    - [github.com/mattn/go-sqlite3 v1.14.23](https://github.com/mattn/go-sqlite3): SQLite3 database driver.
 
-   go-sqlite3 requires gcc to compile. Furthermore, if you intend to cross compile you should install musl-cross (brew install FiloSottile/musl-cross/musl-cross). For example, when targeting Linux on x86_64 architecture use:
+   go-sqlite3 requires gcc to compile. Furthermore, if you intend to cross compile on macOS, you should install musl-cross (brew install FiloSottile/musl-cross/musl-cross). For example, when targeting Linux on x86_64 architecture use:
 
    ```bash
    CC=x86_64-linux-musl-gcc CXX=x86_64-linux-musl-g++ GOARCH=amd64 GOOS=linux CGO_ENABLED=1 go build -o fenfa -ldflags "-linkmode external -extldflags -static"
